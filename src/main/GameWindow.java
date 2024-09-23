@@ -1,24 +1,20 @@
 package main;
 
 import javax.swing.*;
-import java.awt.*;
 
-public class GamePanel extends JPanel {
-    //SCREEN SETTINGS
+public class GameWindow {
 
-    final int originalTileSize = 16;
-    final int scale =3;
+    private JFrame jframe;
+    public GameWindow(GamePanel gamePanel){
+        jframe = new JFrame();
 
-    final int tileSize = originalTileSize * scale;
-    final int maxScreenCol = 16;
-    final int maxScreenRow = 12;
-    final int screenWidth = tileSize * maxScreenCol;
-    final int screenHeight = tileSize * maxScreenRow;
+        jframe.setSize(400, 400);
+        jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        jframe.setVisible(true);
+        jframe.add(gamePanel);
+        jframe.setLocationRelativeTo(null);
+        jframe.setVisible(true);
 
-    public GamePanel(){
-
-        this.setPreferredSize(new Dimension(screenWidth,screenHeight));
-        this.setBackground(Color.black);
-        this.setDoubleBuffered(true);
     }
 }
+// }
