@@ -3,71 +3,90 @@ package main;
 import Inputs.KeyBoardInputs;
 import Inputs.MouseInputs;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.util.Random;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class GamePanel extends JPanel {
 
     private MouseInputs mouseInputs;
     private float xDelta = 100, yDelta = 100;
-    private float xDir = 1f, yDir = 1f;
-    private Color color = new Color(150,20,90);
-    private Random random;
+    private BufferedImage[] idleAnimation;
+    private int animationIndex = 0; // Controla o quadro atual da animação
+    private int animationSpeed = 200; // Tempo em milissegundos para mudar de quadro
+    private Timer timer;
 
-
-    public GamePanel(){
-        random = new Random();
+    public GamePanel() {
         mouseInputs = new MouseInputs(this);
+        importMainCharacterIdle();
+        setPanelSize();
         addKeyListener(new KeyBoardInputs(this));
         addMouseListener(mouseInputs);
         addMouseMotionListener(mouseInputs);
+
+        // Inicializa o Timer para alternar a imagem em intervals
+        timer = new Timer(animationSpeed, e -> updateAnimation());
+        timer.start(); // Inicia o Timer para atualizar a animação
     }
 
-    public void changeXDelta (int value){
-        this.xDelta +=value;
-    }
-    public void changeYDelta (int value){
-        this.yDelta +=value;
+    private void importMainCharacterIdle() {
+        idleAnimation = new BufferedImage[4];
+        for (int i = 0; i < idleAnimation.length; i++) {
+
+            InputStream is = getClass().getResourceAsStream("/Main_Character0" + i + ".png");
+            if (is == null) {
+                System.err.println("Imagem não encontrada: /Main_Character0" + i + ".png");
+                continue;
+            }
+            try {
+                idleAnimation[i] = ImageIO.read(is); // Salva a imagem no array
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } finally {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
-    public void setRectPosition(int x, int y){
+    private void setPanelSize() {
+        Dimension size = new Dimension(1280, 800);
+        setPreferredSize(size);
+    }
+
+    public void changeXDelta(int value) {
+        this.xDelta += value;
+    }
+
+    public void changeYDelta(int value) {
+        this.yDelta += value;
+    }
+
+    public void setRectPosition(int x, int y) {
         this.xDelta = x;
         this.yDelta = y;
-
     }
 
-    public void paintComponent(Graphics g){
+    // Atualiza o índice da animação para alternar as imagens
+    private void updateAnimation() {
+        animationIndex = (animationIndex + 1) % idleAnimation.length; // Incrementa o índice e volta para 0 quando chegar ao fim
+        repaint(); // Redesenha o painel para mostrar a nova imagem
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        updateRect();
-        g.setColor(color);
-
-        g.fillRect((int)xDelta,(int)yDelta,200,50);
-
-
-    }
-    private void updateRect() {
-        xDelta += xDir;
-        if (xDelta > 400 || xDelta < 0) {
-            xDir *= -1;
-            color = getRandomColor();
-        }
-        yDelta += yDir;
-        if (yDelta > 400 || yDelta < 0) {
-            yDir *= -1;
-            color = getRandomColor();
+        // Desenha a imagem atual da animação no painel
+        BufferedImage currentImage = idleAnimation[animationIndex];
+        if (currentImage != null) {
+            g.drawImage(currentImage, (int) xDelta, (int) yDelta, 128, 80, null); // Desenha a imagem atual
         }
     }
-
-private Color getRandomColor (){
-    int r = random.nextInt(255);
-    int g = random.nextInt(255);
-    int b = random.nextInt(255);
-
-    return new Color(r, b,b);
-}
-
-
-
 }
